@@ -1,4 +1,4 @@
-""""Map the columns once" — for a broker file whose layout FolioSense doesn't recognise yet.
+""""Map the columns once" — for a broker file whose layout Aquilvyn doesn't recognise yet.
 
 ``candidate`` finds the most likely header row and shows it with a few sample rows and a best guess per
 field; the person confirms which column is which. ``apply`` renames those columns to the names the normal

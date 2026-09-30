@@ -66,10 +66,10 @@ def test_crypto_roundtrip():
 def test_database_url_built_from_parts_and_escaped():
     from fm_common.config import CommonSettings, build_database_url
 
-    url = build_database_url("fm", "p@ss:w/rd#1", "pgbouncer", 6432, "foliosense")
-    assert url == "postgresql+asyncpg://fm:p%40ss%3Aw%2Frd%231@pgbouncer:6432/foliosense"
+    url = build_database_url("fm", "p@ss:w/rd#1", "pgbouncer", 6432, "aquilvyn")
+    assert url == "postgresql+asyncpg://fm:p%40ss%3Aw%2Frd%231@pgbouncer:6432/aquilvyn"
     s = CommonSettings(postgres_password="secret", db_host="db", db_port=5433, database_url="")
-    assert s.database_url.endswith(":secret@db:5433/foliosense")
+    assert s.database_url.endswith(":secret@db:5433/aquilvyn")
     assert CommonSettings(database_url="postgresql+asyncpg://x:y@z/w").database_url == "postgresql+asyncpg://x:y@z/w"  # override wins
 
 

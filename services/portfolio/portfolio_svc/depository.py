@@ -2,12 +2,12 @@
 
 The depositories' monthly eCAS lists, for each demat account (whichever broker it's with), every ISIN and how
 many shares are in it — but not what they cost. So it is not imported as holdings (that would invent gains);
-it is compared with what FolioSense has for the same person (matched by the holder's PAN):
+it is compared with what Aquilvyn has for the same person (matched by the holder's PAN):
 
 * ``ok``       — same quantity
-* ``differs``  — FolioSense has a different quantity (a missed trade, a bonus / split, a partial import)
-* ``missing``  — in the demat account but not in FolioSense (import that broker's holdings or trades)
-* ``extra``    — in FolioSense but in none of this person's demat accounts (sold, or recorded twice)
+* ``differs``  — Aquilvyn has a different quantity (a missed trade, a bonus / split, a partial import)
+* ``missing``  — in the demat account but not in Aquilvyn (import that broker's holdings or trades)
+* ``extra``    — in Aquilvyn but in none of this person's demat accounts (sold, or recorded twice)
 
 Mutual funds come from the CAMS / KFintech CAS, so only shares and ETFs are checked here.
 """
@@ -58,7 +58,7 @@ def _d(v: Any) -> Decimal:
 
 def reconcile(data: dict[str, Any], held: dict[str, dict[str, Decimal]], profile_of_pan: dict[str, dict[str, str]],
               names: dict[str, str] | None = None) -> dict[str, Any]:
-    """``held``: {profile_id: {ISIN: quantity in FolioSense}} · ``profile_of_pan``: {PAN: {id, name}}."""
+    """``held``: {profile_id: {ISIN: quantity in Aquilvyn}} · ``profile_of_pan``: {PAN: {id, name}}."""
     accounts: list[dict[str, Any]] = []
     seen: dict[str, set[str]] = {}
     counts = {"ok": 0, "differs": 0, "missing": 0, "extra": 0}
@@ -108,7 +108,7 @@ async def check(db: AsyncSession, principal: Principal, data: dict[str, Any]) ->
                 hit = next((p for p in profiles if p.pan_hash and p.pan_hash == pan_fingerprint(pan)), None)
                 if hit:
                     profile_of_pan[pan] = {"id": str(hit.id), "name": hit.display_name}
-    # what FolioSense holds for each matched person, by ISIN
+    # what Aquilvyn holds for each matched person, by ISIN
     held: dict[str, dict[str, Decimal]] = {}
     qty_by_inst: dict[str, dict[str, Decimal]] = {}
     for prof in {p["id"] for p in profile_of_pan.values()}:

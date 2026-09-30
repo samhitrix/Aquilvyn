@@ -3,7 +3,7 @@
 sources:
   docker:
     type: docker_logs
-    exclude_containers: ["foliosense-vector"]
+    exclude_containers: ["aquilvyn-vector"]
 
 transforms:
   parse:

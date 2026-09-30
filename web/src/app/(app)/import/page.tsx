@@ -153,7 +153,7 @@ export default function ImportPage() {
                 <ul className="mt-1 list-disc pl-5 text-ink2">
                   <li><b>Zerodha</b> Console → Portfolio → Holdings → Download (<b>.xlsx</b>: Equity + Mutual Funds)</li>
                   <li><b>Upstox, ICICI Direct, Kotak, Paytm Money, SBI Securities, Groww, Angel One, 5paisa …</b> — their holdings download (Excel / CSV)</li>
-                  <li>A layout FolioSense doesn&apos;t know yet? You map its columns once; it&apos;s remembered.</li>
+                  <li>A layout Aquilvyn doesn&apos;t know yet? You map its columns once; it&apos;s remembered.</li>
                 </ul>
               </div>
               <div className="rounded-lg border border-line p-3 text-sm">
@@ -162,7 +162,7 @@ export default function ImportPage() {
                   <li><b>CAMS / KFintech CAS</b> PDF (<b>Detailed</b>, since inception) — password = PAN in capitals. Every PAN in it goes to the right person.</li>
                   <li><b>Any broker&apos;s trade book</b> (Excel / CSV) — Zerodha Tradebook, Upstox Trade report, ICICI Direct “All Transaction”, SBI / Kotak trade book …</li>
                   <li><b>Tax P&amp;L / capital gains</b> report from any broker — goes to the Tax tab</li>
-                  <li><b>NSDL / CDSL eCAS</b> PDF (monthly, from the depository) — checks your share holdings across <i>every</i> broker against FolioSense</li>
+                  <li><b>NSDL / CDSL eCAS</b> PDF (monthly, from the depository) — checks your share holdings across <i>every</i> broker against Aquilvyn</li>
                 </ul>
               </div>
             </div>
@@ -360,7 +360,7 @@ function ColumnMapper({ cand, message, busy, fileName, onSubmit }: {
   ];
   return (
     <div className="mt-4 space-y-3 rounded-xl border-2 border-brand/40 p-4">
-      <p className="text-sm"><b className="text-brand">New file layout.</b> {message} FolioSense remembers your answer, so the next file like this imports straight away.</p>
+      <p className="text-sm"><b className="text-brand">New file layout.</b> {message} Aquilvyn remembers your answer, so the next file like this imports straight away.</p>
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <span className="font-medium">This file is</span>
         {(["trades", "holdings"] as const).map((k) => (
@@ -424,17 +424,17 @@ type DepositoryReport = {
 };
 const DEPO: Record<string, [string, string]> = {
   ok: ["✔ matches", "bg-up/15 text-up"], differs: ["≠ quantity differs", "bg-warn/15 text-warn"],
-  missing: ["✖ not in FolioSense", "bg-down/15 text-down"], extra: ["? not at the depository", "bg-warn/15 text-warn"],
+  missing: ["✖ not in Aquilvyn", "bg-down/15 text-down"], extra: ["? not at the depository", "bg-warn/15 text-warn"],
 };
 
-/** NSDL/CDSL eCAS: every demat account (any broker) compared with FolioSense — nothing is imported (no costs in it). */
+/** NSDL/CDSL eCAS: every demat account (any broker) compared with Aquilvyn — nothing is imported (no costs in it). */
 function DepositoryCheck({ report, onDone }: { report: DepositoryReport; onDone: () => void }) {
   const c = report.counts;
   return (
     <div className="space-y-3">
       <p className="text-sm">
         Your depository statement{report.period.to ? ` (to ${report.period.to})` : ""} lists what is in each demat account, whichever broker it&apos;s with — but not what
-        you paid, so nothing is imported from it. It&apos;s compared with FolioSense instead:{" "}
+        you paid, so nothing is imported from it. It&apos;s compared with Aquilvyn instead:{" "}
         <span className="chip bg-up/15 text-up">{c.ok} match</span> <span className="chip bg-warn/15 text-warn">{c.differs} differ</span>{" "}
         <span className="chip bg-down/15 text-down">{c.missing} missing</span> <span className="chip bg-warn/15 text-warn">{c.extra} not at the depository</span>
       </p>
@@ -447,7 +447,7 @@ function DepositoryCheck({ report, onDone }: { report: DepositoryReport; onDone:
             <span className="ml-auto text-xs text-muted">{a.profile ? `compared with ${a.profile.name}` : "no matching family member"}</span>
           </div>
           <table className="w-full text-sm">
-            <thead><tr><th className="th">Share</th><th className="th text-right">At the depository</th><th className="th text-right">In FolioSense</th><th className="th">Result</th></tr></thead>
+            <thead><tr><th className="th">Share</th><th className="th text-right">At the depository</th><th className="th text-right">In Aquilvyn</th><th className="th">Result</th></tr></thead>
             <tbody>{a.lines.map((l) => (
               <tr key={l.isin} className="border-t border-line">
                 <td className="td">{l.name}<span className="block text-xs text-muted">{l.isin}</span></td>
@@ -459,7 +459,7 @@ function DepositoryCheck({ report, onDone }: { report: DepositoryReport; onDone:
       ))}
       {report.extra.length > 0 && (
         <div className="rounded-lg border border-line p-3 text-sm">
-          <b>In FolioSense but in none of these demat accounts</b> — sold already, or recorded twice?
+          <b>In Aquilvyn but in none of these demat accounts</b> — sold already, or recorded twice?
           <ul className="mt-1 list-disc pl-5 text-ink2">{report.extra.map((e) => <li key={e.isin}>{e.name} — {e.our_qty} ({e.profile?.name ?? ""})</li>)}</ul>
         </div>
       )}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FolioSense task runner — works the same on Windows (PowerShell/CMD), macOS and Linux.
+"""Aquilvyn task runner — works the same on Windows (PowerShell/CMD), macOS and Linux.
 Standard library only, so it runs before any `pip install`.
 
     python scripts/fm.py help
@@ -100,24 +100,25 @@ def ensure_docker_engine(timeout: int = 180) -> None:
     sys.exit(1)
 
 
-OLD_PROJECT = "foliomatrix"  # the app's earlier name — its Docker volumes hold existing installs' data
+OLD_PROJECTS = ("foliomatrix", "foliosense")  # the app's earlier names — their Docker volumes hold existing installs' data
 
 
 def keep_existing_data() -> None:
-    """The Docker project was renamed foliomatrix → foliosense. Volume names follow the project name, so an
-    existing install would suddenly see an empty database. If the old volumes exist and .env doesn't pin a
-    project yet, pin the old name so the same data keeps being used."""
+    """The Docker project was renamed (foliomatrix → foliosense → aquilvyn). Volume names follow the project name, so an
+    existing install would suddenly see an empty database. If an old project's volumes exist and .env doesn't pin a
+    project yet, pin that old name so the same data keeps being used."""
     if os.environ.get("COMPOSE_PROJECT_NAME") or _env_value("COMPOSE_PROJECT_NAME"):
         return
     try:
         vols = subprocess.run(["docker", "volume", "ls", "-q"], capture_output=True, text=True, timeout=20).stdout.split()
     except Exception:  # noqa: BLE001 — no Docker, nothing to protect
         return
-    if f"{OLD_PROJECT}_pgdata" in vols:
+    old = next((p for p in OLD_PROJECTS if f"{p}_pgdata" in vols), None)
+    if old:
         with ENV.open("a", encoding="utf-8") as fh:
-            fh.write(f"\n# Keeps using the data created before the rename to FolioSense (Docker volumes {OLD_PROJECT}_*)\n"
-                     f"COMPOSE_PROJECT_NAME={OLD_PROJECT}\n")
-        say(f"found your existing data (Docker volumes {OLD_PROJECT}_*) — kept using it: COMPOSE_PROJECT_NAME={OLD_PROJECT} added to .env", True)
+            fh.write(f"\n# Keeps using the data created before the rename to Aquilvyn (Docker volumes {old}_*)\n"
+                     f"COMPOSE_PROJECT_NAME={old}\n")
+        say(f"found your existing data (Docker volumes {old}_*) — kept using it: COMPOSE_PROJECT_NAME={old} added to .env", True)
 
 
 def compose() -> list[str]:
@@ -272,7 +273,7 @@ def resolve_ports(base: list[str], full: bool) -> dict[str, str]:
         if port != preferred:
             say(f"port {preferred} ({label}) is busy or reserved → using {port} (saved as {key} in .env)")
         elif owned == port:
-            say(f"port {port} ({label}) already used by FolioSense — keeping it", True)
+            say(f"port {port} ({label}) already used by Aquilvyn — keeping it", True)
         else:
             say(f"port {port} ({label}) is free", True)
         if _env_value(key) != str(port):
@@ -300,9 +301,9 @@ EOL_FILES = ("infra/healthping/ping.sh", "infra/nginx/nginx.conf")
 
 def _db_parts() -> dict[str, str]:
     return {
-        "user": _env_value("POSTGRES_USER") or "foliosense",
-        "password": _env_value("POSTGRES_PASSWORD") or "foliosense",
-        "db": _env_value("POSTGRES_DB") or "foliosense",
+        "user": _env_value("POSTGRES_USER") or "aquilvyn",
+        "password": _env_value("POSTGRES_PASSWORD") or "aquilvyn",
+        "db": _env_value("POSTGRES_DB") or "aquilvyn",
         "host": _env_value("LOCAL_DB_HOST") or "localhost",
         "port": _env_value("LOCAL_DB_PORT") or "5432",
     }
@@ -387,7 +388,7 @@ def doctor() -> None:
             preferred = int(_env_value(key) or default)
             owned = _owned_port(base, service, cport)
             if owned == preferred:
-                say(f"{key}={preferred} ({label}) — in use by FolioSense", True)
+                say(f"{key}={preferred} ({label}) — in use by Aquilvyn", True)
             elif can_bind(preferred):
                 say(f"{key}={preferred} ({label}) — free", True)
             else:
@@ -420,7 +421,7 @@ def doctor() -> None:
         problems += not rok
         for port, what in ((8001, "identity"), (8005, "advisor"), (3000, "web")):
             free = _port_free(port)
-            say(f"port {port} ({what}) {'free' if free else 'IN USE (fine if FolioSense is already running)'}", free)
+            say(f"port {port} ({what}) {'free' if free else 'IN USE (fine if Aquilvyn is already running)'}", free)
     print()
     say("all good" if not problems else f"{problems} issue(s) found", not problems)
 
@@ -437,7 +438,7 @@ def _find_psql() -> str | None:
 
 
 def db_init() -> None:
-    """Create (or update the password of) the FolioSense role + database on your local
+    """Create (or update the password of) the Aquilvyn role + database on your local
     PostgreSQL, using exactly the POSTGRES_* values from .env — nothing to type twice."""
     if not ENV.exists():
         setup()
@@ -601,7 +602,7 @@ def main(argv: list[str]) -> None:
     elif target == "down":
         run([*compose(), "--profile", "observability", "down"])
     elif target == "clean":
-        if input("This DELETES all FolioSense data volumes. Type 'yes' to continue: ").strip().lower() == "yes":
+        if input("This DELETES all Aquilvyn data volumes. Type 'yes' to continue: ").strip().lower() == "yes":
             run([*compose(), "--profile", "observability", "down", "-v"])
     elif target == "ps":
         run([*compose(), "ps"])

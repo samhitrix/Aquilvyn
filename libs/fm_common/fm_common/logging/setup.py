@@ -34,7 +34,7 @@ def _orjson_dumps(obj: Any, default: Any = None) -> str:
     return orjson.dumps(obj, default=default or str).decode()
 
 
-def configure_logging(level: str = "INFO", service: str = "foliosense-api") -> None:
+def configure_logging(level: str = "INFO", service: str = "aquilvyn-api") -> None:
     global _listener
 
     shared: list[Any] = [

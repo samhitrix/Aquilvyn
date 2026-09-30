@@ -79,7 +79,7 @@ export default function TaxPage() {
         <Empty title={`No tax statement for FY ${activeFy ?? ""} yet`}>
           <p className="max-w-xl text-sm text-ink2">
             Download your broker&apos;s tax report and import it — Zerodha: Console → Reports → <b>Tax P&amp;L</b>; Groww / Upstox / ICICI Direct / others:
-            the <b>capital gains</b> report (Excel or CSV). Any file with sell dates, buy &amp; sell values works; FolioSense checks its own totals.
+            the <b>capital gains</b> report (Excel or CSV). Any file with sell dates, buy &amp; sell values works; Aquilvyn checks its own totals.
           </p>
           <Link href="/import" className="btn-primary mt-3">Import a tax statement</Link>
         </Empty>
@@ -89,7 +89,7 @@ export default function TaxPage() {
             <StatTile label={`Realised gains · FY ${d.fy}`} value={<span className={tone(d.total.realised)}>{inr(d.total.realised, { compact: true })}</span>} sub="from sales (taxable figure)" />
             <StatTile label="Dividends & interest" value={inr(d.total.dividends + d.total.interest, { compact: true })} sub="taxed at your slab rate" />
             <StatTile label="Estimated tax" value={inr(d.total.estimated_tax, { compact: true })} sub="on this investment income, incl. 4% cess"
-                      hint="Only what FolioSense sees — not salary, deductions or TDS already paid. Surcharge not included." />
+                      hint="Only what Aquilvyn sees — not salary, deductions or TDS already paid. Surcharge not included." />
             <StatTile label="Tax-free LTCG left" value={inr(d.people.reduce((a, p) => a + p.ltcg_exemption.left, 0), { compact: true })}
                       sub={`₹1.25 L per person per FY · ${d.people.length} ${d.people.length === 1 ? "person" : "people"}`} />
           </div>

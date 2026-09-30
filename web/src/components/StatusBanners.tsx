@@ -63,7 +63,7 @@ export function AIBanner({ summary }: { summary?: AdvisorSummary | null }) {
       )}
       {ai.mode === "rules_only" ? (
         <div className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn">
-          <b>No AI model connected — rules-only.</b> Every verdict below is calculated by FolioSense&apos;s transparent rulebook from your holdings and market data
+          <b>No AI model connected — rules-only.</b> Every verdict below is calculated by Aquilvyn&apos;s transparent rulebook from your holdings and market data
           (each card shows the rule and data behind it). No AI has checked it. <Link href="/settings#ai" className="underline">Add Claude / OpenAI / Gemini / Ollama →</Link>
         </div>
       ) : (

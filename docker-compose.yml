@@ -1,9 +1,9 @@
-# FolioSense — full local stack.
+# Aquilvyn — full local stack.
 #   make up        everything incl. observability (Loki, Tempo, Grafana, Vector, OTel collector)
 #   make up-lite   core services only (less RAM)
 # Open http://localhost:8080  (Grafana: http://localhost:3001)
 
-name: foliosense
+name: aquilvyn
 
 # Container logs are capped (Docker's default json-file driver keeps them forever).
 x-logging: &logging
@@ -43,9 +43,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-foliosense}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foliosense}
-      POSTGRES_DB: ${POSTGRES_DB:-foliosense}
+      POSTGRES_USER: ${POSTGRES_USER:-aquilvyn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aquilvyn}
+      POSTGRES_DB: ${POSTGRES_DB:-aquilvyn}
     command: ["postgres", "-c", "max_connections=200", "-c", "shared_buffers=256MB", "-c", "log_min_duration_statement=500"]
     volumes: [pgdata:/var/lib/postgresql/data]
     # Not needed by the app (services use the internal Docker network). Published only on a
@@ -62,9 +62,9 @@ services:
     restart: unless-stopped
     environment:
       DB_HOST: postgres
-      DB_USER: ${POSTGRES_USER:-foliosense}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-foliosense}
-      DB_NAME: ${POSTGRES_DB:-foliosense}
+      DB_USER: ${POSTGRES_USER:-aquilvyn}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-aquilvyn}
+      DB_NAME: ${POSTGRES_DB:-aquilvyn}
       AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction          # services use SET LOCAL + no server-side prepared stmt reuse
       MAX_CLIENT_CONN: 1000
@@ -85,7 +85,7 @@ services:
 
   migrate:
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: migrate }
-    image: foliosense/migrate:local
+    image: aquilvyn/migrate:local
     logging: *logging
     env_file: .env
     environment:
@@ -98,54 +98,54 @@ services:
   identity:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: identity } }
-    image: foliosense/identity:local
+    image: aquilvyn/identity:local
   portfolio:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: portfolio } }
-    image: foliosense/portfolio:local
+    image: aquilvyn/portfolio:local
   market:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: market } }
-    image: foliosense/market:local
+    image: aquilvyn/market:local
   analytics:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: analytics } }
-    image: foliosense/analytics:local
+    image: aquilvyn/analytics:local
   advisor:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: advisor } }
-    image: foliosense/advisor:local
+    image: aquilvyn/advisor:local
   dashboard:
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: dashboard } }
-    image: foliosense/dashboard:local
+    image: aquilvyn/dashboard:local
   readiness:   # the Readiness Engine: checks every holding's data / analysis / AI review and fixes what's missing
     <<: *service
     build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: readiness } }
-    image: foliosense/readiness:local
+    image: aquilvyn/readiness:local
 
   # ------------------------------------------------------------------ async workers (E33b, Arq)
   market-worker:
     <<: *service
-    image: foliosense/market:local
+    image: aquilvyn/market:local
     command: ["arq", "market_svc.worker.WorkerSettings"]
     healthcheck: { disable: true }
     depends_on: { market: { condition: service_started } }
   portfolio-worker:
     <<: *service
-    image: foliosense/portfolio:local
+    image: aquilvyn/portfolio:local
     command: ["arq", "portfolio_svc.worker.WorkerSettings"]
     healthcheck: { disable: true }
     depends_on: { portfolio: { condition: service_started } }
   advisor-worker:
     <<: *service
-    image: foliosense/advisor:local
+    image: aquilvyn/advisor:local
     command: ["arq", "advisor_svc.worker.WorkerSettings"]
     healthcheck: { disable: true }
     depends_on: { advisor: { condition: service_started } }
   readiness-worker:
     <<: *service
-    image: foliosense/readiness:local
+    image: aquilvyn/readiness:local
     command: ["arq", "readiness_svc.worker.WorkerSettings"]
     healthcheck: { disable: true }
     depends_on: { readiness: { condition: service_started } }
@@ -154,7 +154,7 @@ services:
   web:
     logging: *logging
     build: { context: ./web, dockerfile: Dockerfile }
-    image: foliosense/web:local
+    image: aquilvyn/web:local
     restart: unless-stopped
     environment:
       API_INTERNAL_URL: http://gateway:8080
@@ -170,7 +170,7 @@ services:
         FROM nginx:1.27-alpine
         COPY nginx.conf /etc/nginx/nginx.conf
         RUN sed -i 's/\r$//' /etc/nginx/nginx.conf
-    image: foliosense/gateway:local
+    image: aquilvyn/gateway:local
     restart: unless-stopped
     ports: ["${FM_HTTP_PORT:-8080}:8080"]     # `python scripts/fm.py up` picks a free port automatically
     depends_on: [identity, portfolio, market, analytics, advisor, dashboard, readiness, web]
@@ -183,7 +183,7 @@ services:
       dockerfile_inline: |
         FROM curlimages/curl:8.10.1
         COPY ping.sh /ping.sh
-    image: foliosense/healthping:local
+    image: aquilvyn/healthping:local
     restart: unless-stopped
     # strip CR in case the repo was checked out on Windows with CRLF line endings
     entrypoint: ["/bin/sh", "-c", "tr -d '\\r' < /ping.sh > /tmp/ping.sh && exec sh /tmp/ping.sh"]
@@ -198,8 +198,8 @@ services:
       dockerfile_inline: |
         FROM timberio/vector:0.41.1-alpine
         COPY vector.yaml /etc/vector/vector.yaml
-    image: foliosense/vector:local
-    container_name: foliosense-vector
+    image: aquilvyn/vector:local
+    container_name: aquilvyn-vector
     profiles: ["observability"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro   # Docker's own socket (inside Docker, not your drive)
@@ -212,7 +212,7 @@ services:
       dockerfile_inline: |
         FROM grafana/loki:3.2.1
         COPY loki.yaml /etc/loki/loki.yaml
-    image: foliosense/loki:local
+    image: aquilvyn/loki:local
     profiles: ["observability"]
     command: ["-config.file=/etc/loki/loki.yaml"]
     volumes: ["lokidata:/loki"]
@@ -223,7 +223,7 @@ services:
       dockerfile_inline: |
         FROM grafana/tempo:2.6.1
         COPY tempo.yaml /etc/tempo.yaml
-    image: foliosense/tempo:local
+    image: aquilvyn/tempo:local
     profiles: ["observability"]
     command: ["-config.file=/etc/tempo.yaml"]
     volumes: ["tempodata:/var/tempo"]
@@ -234,7 +234,7 @@ services:
       dockerfile_inline: |
         FROM otel/opentelemetry-collector-contrib:0.112.0
         COPY collector.yaml /etc/otelcol/config.yaml
-    image: foliosense/otel-collector:local
+    image: aquilvyn/otel-collector:local
     profiles: ["observability"]
     command: ["--config=/etc/otelcol/config.yaml"]
     depends_on: [tempo]
@@ -245,7 +245,7 @@ services:
       dockerfile_inline: |
         FROM grafana/grafana:11.3.0
         COPY provisioning /etc/grafana/provisioning
-    image: foliosense/grafana:local
+    image: aquilvyn/grafana:local
     profiles: ["observability"]
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}

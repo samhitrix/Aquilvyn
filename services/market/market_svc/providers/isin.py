@@ -4,7 +4,7 @@ Brokers name the same share differently — ICICI Direct uses its own codes ("RE
 company name, Upstox a scrip code — but every one of them prints the ISIN, which identifies the security
 exactly. Resolution order (each result cached for a day):
 
-1. instruments FolioSense already knows with that ISIN;
+1. instruments Aquilvyn already knows with that ISIN;
 2. NSE's complete equity list (``EQUITY_L.csv``: SYMBOL, NAME OF COMPANY, SERIES, …, ISIN NUMBER) — every
    NSE-listed share and ETF;
 3. Yahoo's search, which also answers ISIN queries (covers BSE-only shares).

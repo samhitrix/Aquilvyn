@@ -534,7 +534,7 @@ async def import_preview(
     """Step 1: read the file, find whose it is (PAN / broker account), and propose a profile per owner.
     ``profile_id``: who you're importing for (used where the file doesn't identify its owner).
     ``mapping``: JSON ``{"kind": "trades"|"holdings", "fields": {field: column header}, "label": …}`` for a layout
-    FolioSense didn't recognise (the 422 response offers the columns); it is remembered for next time."""
+    Aquilvyn didn't recognise (the 422 response offers the columns); it is remembered for next time."""
     import json
 
     try:

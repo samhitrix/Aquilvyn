@@ -1,4 +1,4 @@
-# FolioSense
+# Aquilvyn
 
 **A family wealth tracker with an AI advisor, built for Indian investors.**
 It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold for every member of the family. It analyses each holding technically and fundamentally. It then tells you what to do, whether that's *Buy more, Hold, Sell some, Sell or Switch*, and backs each call with:
@@ -9,13 +9,13 @@ It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold fo
 > Status: **early release — runs locally** on Windows, macOS or Linux, with or without Docker. No real orders are ever placed; broker execution is planned for a later phase and switched off.
 > Recommendations are analysis for personal and family research. They are **not** SEBI-registered investment advice.
 
-**Contents:** [What's different](#what-makes-foliosense-different) · [How it works](#how-it-works) · [Screenshots](#screenshots) · [Architecture](#architecture) · [How a call is made](#how-the-advisor-makes-a-call) · [Readiness engine](#the-readiness-engine-self-healing-data) · [Engines](#engine-catalogue) · [Features](#features) · [Quick start](#quick-start) · [Configuration](#configuration) · [Roadmap](#roadmap) · [Contributing](#contributing)
+**Contents:** [What's different](#what-makes-aquilvyn-different) · [How it works](#how-it-works) · [Screenshots](#screenshots) · [Architecture](#architecture) · [How a call is made](#how-the-advisor-makes-a-call) · [Readiness engine](#the-readiness-engine-self-healing-data) · [Engines](#engine-catalogue) · [Features](#features) · [Quick start](#quick-start) · [Configuration](#configuration) · [Roadmap](#roadmap) · [Contributing](#contributing)
 
 ---
 
-## What makes FolioSense different
+## What makes Aquilvyn different
 
-| Capability | How FolioSense does it |
+| Capability | How Aquilvyn does it |
 |---|---|
 | Family / profile-wise tracking | Household → profiles (PAN-tagged) → portfolios; statements land on the right person automatically |
 | Stocks · MF · NPS · EPF · PPF | All in one ledger, plus live NSE/BSE prices over WebSocket |
@@ -30,13 +30,13 @@ It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold fo
 | Knows locked money | EPF/PPF/NPS are never suggested for selling; rebalancing is done by redirecting new money |
 
 > [!NOTE]
-> **Broker support:** imports are **fully tested with Zerodha**. Files from other brokers (ICICI Direct, Upstox, Groww, Paytm Money, SBI Securities, Kotak and others) are supported and should work, but have **not been tested with real exports yet**. If a file doesn't import correctly, please [open an issue](https://github.com/samhitrix/FolioSense/issues) with the broker name, the report you downloaded and the error message — and attach a sample only after removing names, PAN, account numbers and amounts.
+> **Broker support:** imports are **fully tested with Zerodha**. Files from other brokers (ICICI Direct, Upstox, Groww, Paytm Money, SBI Securities, Kotak and others) are supported and should work, but have **not been tested with real exports yet**. If a file doesn't import correctly, please [open an issue](https://github.com/samhitrix/Aquilvyn/issues) with the broker name, the report you downloaded and the error message — and attach a sample only after removing names, PAN, account numbers and amounts.
 
 ---
 
 ## How it works
 
-<p align="center"><img src="docs/how-it-works.svg" alt="How FolioSense makes a call: data in → analysis engines split the evidence into strengths and warnings → rulebook decides → risk and tax checks → AI second opinion → you decide" width="100%"></p>
+<p align="center"><img src="docs/how-it-works.svg" alt="How Aquilvyn makes a call: data in → analysis engines split the evidence into strengths and warnings → rulebook decides → risk and tax checks → AI second opinion → you decide" width="100%"></p>
 
 Data comes in from market sources and your own statements. The analysis engines score it and split the evidence into **strengths** and **warnings**. The versioned **rulebook** makes the call, **risk & tax checks** size it and set stops, **AI reviewers** give an independent second opinion, and **you** always have the final say. The **Readiness engine** keeps every input fresh, and the **Scorecard** grades every past call against NIFTY.
 
@@ -209,7 +209,7 @@ E-numbers are the project's engine IDs; engines not listed here belong to later 
 
 ## Quick start
 ```bash
-git clone https://github.com/samhitrix/FolioSense.git && cd FolioSense
+git clone https://github.com/samhitrix/Aquilvyn.git && cd Aquilvyn
 python scripts/fm.py setup      # creates .env with generated secrets (and adds new settings later)
 python scripts/fm.py up-lite    # Docker: core stack   (or: up = with Grafana/Loki/Tempo)
 # open http://localhost:8080
@@ -262,7 +262,7 @@ Issues and pull requests are welcome.
 - By submitting a contribution you agree that it is licensed under the same terms, and that the maintainer may also license it to others, including commercially.
 
 ## License
-FolioSense is **source-available for personal, non-commercial use** under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+Aquilvyn is **source-available for personal, non-commercial use** under the [PolyForm Noncommercial License 1.0.0](LICENSE).
 
 - ✅ **Allowed:** using it for yourself and your family, studying it, changing it for your own use, hobby and research projects, and use by charities, schools and other non-profit organisations.
 - ❌ **Not allowed:** any commercial use — selling it or copies of it, offering it as a paid or hosted service, or using it inside a business.
@@ -272,4 +272,4 @@ Anyone who shares a copy must include the licence and the `Required Notice:` lin
 Third-party: charts use [TradingView Lightweight Charts™](https://www.tradingview.com/lightweight-charts/) (Apache-2.0), © TradingView, Inc.; all other dependencies are MIT, BSD or Apache-2.0 licensed and keep their own licences. Market data comes from third-party sources under their own terms and is for personal research only.
 
 ## Disclaimer
-FolioSense is a personal and family research tool. Market data from free sources can be delayed or incomplete; every report shows its data-quality grade and sources. Nothing here is investment advice. Verify before you act.
+Aquilvyn is a personal and family research tool. Market data from free sources can be delayed or incomplete; every report shows its data-quality grade and sources. Nothing here is investment advice. Verify before you act.

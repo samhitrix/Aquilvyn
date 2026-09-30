@@ -287,7 +287,7 @@ async def oidc_callback(request: Request, db: DB, code: str | None = None, state
         one_time = secrets.token_urlsafe(32)
         await get_redis().set(f"fm:oidc:otc:{one_time}", orjson.dumps({"uid": str(user.id), "platform": platform}), ex=60)
         await db.commit()
-        return RedirectResponse(f"foliosense://auth/callback?code={one_time}", status_code=302)
+        return RedirectResponse(f"aquilvyn://auth/callback?code={one_time}", status_code=302)
 
     pair = await issue_tokens(db, user, _client(request, "web"))
     await db.commit()

@@ -40,9 +40,9 @@ def _migrations_url() -> str:
         return url
     e = os.environ
     return build_database_url(
-        e.get("POSTGRES_USER", "foliosense"), e.get("POSTGRES_PASSWORD", "foliosense"),
+        e.get("POSTGRES_USER", "aquilvyn"), e.get("POSTGRES_PASSWORD", "aquilvyn"),
         e.get("MIGRATIONS_DB_HOST") or e.get("DB_HOST", "localhost"), e.get("MIGRATIONS_DB_PORT") or e.get("DB_PORT", "5432"),
-        e.get("POSTGRES_DB", "foliosense"),
+        e.get("POSTGRES_DB", "aquilvyn"),
     )
 
 

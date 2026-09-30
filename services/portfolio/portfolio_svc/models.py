@@ -214,7 +214,7 @@ class ProfileAccount(UUIDPk, Timestamps, Base):
 
 
 class ImportTemplate(UUIDPk, Timestamps, Base):
-    """A column mapping the household confirmed once for a broker file layout FolioSense didn't know.
+    """A column mapping the household confirmed once for a broker file layout Aquilvyn didn't know.
     Keyed by a fingerprint of the header row (column names only — no values are ever stored)."""
 
     __tablename__ = "import_templates"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run every FolioSense service + worker locally WITHOUT Docker — works on Windows, macOS, Linux.
+"""Run every Aquilvyn service + worker locally WITHOUT Docker — works on Windows, macOS, Linux.
 
     python scripts/dev.py            # migrate, start 6 services + 3 workers, Ctrl+C stops all
     python scripts/dev.py --no-workers

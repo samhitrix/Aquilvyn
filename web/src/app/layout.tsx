@@ -5,7 +5,7 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "FolioSense",
+  title: "Aquilvyn",
   description: "Family wealth tracking with an evidence-backed AI advisor",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#4f46e5" };

@@ -107,8 +107,8 @@ export default function ReportPage() {
         <div role="alert" className="rounded-xl border-2 border-warn bg-warn/10 p-4">
           <p className="text-base font-bold text-warn">No buy or sell call yet — the data to judge it is missing</p>
           <p className="mt-1 text-sm">{fr.decision_trace?.matched_rule === "data_no_fundamentals"
-            ? "This stock's company fundamentals (valuation, profits, debt) couldn't be loaded, so FolioSense won't tell you to buy or sell it on price moves alone. Keep holding; the call appears automatically once the data loads."
-            : "There isn't enough price history to read the trend, so FolioSense won't make a buy or sell call. Keep holding; the call appears automatically once history loads."}</p>
+            ? "This stock's company fundamentals (valuation, profits, debt) couldn't be loaded, so Aquilvyn won't tell you to buy or sell it on price moves alone. Keep holding; the call appears automatically once the data loads."
+            : "There isn't enough price history to read the trend, so Aquilvyn won't make a buy or sell call. Keep holding; the call appears automatically once history loads."}</p>
           {fund?.status === "failing" && <p className="mt-1 text-sm text-ink2">Source status: {fund.last_error} ({ago(fund.last_error_ago_s)}).</p>}
         </div>
       )}
@@ -231,7 +231,7 @@ export default function ReportPage() {
         {r.asset_type === "stock" && !ev.fundamental?.available && (
           <Section title="Fundamental analysis" accent="warn">
             <p className="text-sm font-medium text-warn">Not available — {ev.fundamental?.reason ?? "no company data could be loaded for this stock"}.</p>
-            <p className="mt-1 text-sm text-ink2">Without valuation, profits and debt data, FolioSense makes no buy or sell call on this stock.
+            <p className="mt-1 text-sm text-ink2">Without valuation, profits and debt data, Aquilvyn makes no buy or sell call on this stock.
               {fund?.status === "failing" ? ` Source error: ${fund.last_error}.` : ""}</p>
           </Section>
         )}

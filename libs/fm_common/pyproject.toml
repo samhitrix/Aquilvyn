@@ -1,7 +1,7 @@
 [project]
 name = "fm-common"
 version = "0.1.0"
-description = "FolioSense shared platform engines: logging, cache, rate limit, identity verification, events, db, telemetry"
+description = "Aquilvyn shared platform engines: logging, cache, rate limit, identity verification, events, db, telemetry"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<0.116",

@@ -1,6 +1,6 @@
-# How to run FolioSense, step by step
+# How to run Aquilvyn, step by step
 
-There are two ways to run FolioSense locally:
+There are two ways to run Aquilvyn locally:
 
 - **Option A: Docker Compose (recommended).** Everything runs in containers with one command.
 - **Option B: without Docker.** Use your own PostgreSQL (15–18) and Redis and start everything with `python scripts/dev.py`. Useful when developing a single service.
@@ -25,8 +25,8 @@ Both options use the same **`.env`** file for configuration.
 ## 1. Get the code
 
 ```bash
-git clone https://github.com/samhitrix/FolioSense.git
-cd FolioSense
+git clone https://github.com/samhitrix/Aquilvyn.git
+cd Aquilvyn
 ```
 
 ## 2. Create your configuration (`.env`)
@@ -79,7 +79,7 @@ AI keys can also be added later in the web app under **Settings → AI providers
 
 ## Login with Gmail (optional)
 
-FolioSense can let people sign in with their Google account. You need a **Client ID** and **Client Secret** from Google — free, about 10 minutes, done once.
+Aquilvyn can let people sign in with their Google account. You need a **Client ID** and **Client Secret** from Google — free, about 10 minutes, done once.
 
 **Which address to use.** Everything below uses your app's address:
 - Docker (`fm.py up` / `up-lite`): `http://localhost:8080` — or the port `fm.py` printed if 8080 was busy.
@@ -90,7 +90,7 @@ So the **redirect URI** is `<app address>/api/v1/auth/oidc/callback`, e.g. `http
 ### 1. Create or select a Google Cloud project
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and sign in with your Google account.
 2. Click the project drop-down at the top left → **New Project** (or pick an existing project).
-3. Give it a name (e.g. *FolioSense*) and click **Create**.
+3. Give it a name (e.g. *Aquilvyn*) and click **Create**.
 
 ### 2. Configure the OAuth consent screen
 This must be done before you can create credentials.
@@ -99,7 +99,7 @@ This must be done before you can create credentials.
    - **External** — anyone with a Gmail account can sign in (the usual choice for a family).
    - **Internal** — only accounts in your own Google Workspace organisation.
 3. Click **Create** and fill in the required fields:
-   - **App name:** e.g. *FolioSense*
+   - **App name:** e.g. *Aquilvyn*
    - **User support email** and **Developer contact information:** your email address
 4. Click **Save and Continue**.
 5. On the **Scopes** page click **Add or Remove Scopes** and select `openid`, `.../auth/userinfo.email` and `.../auth/userinfo.profile`, then **Save and Continue**.
@@ -108,7 +108,7 @@ This must be done before you can create credentials.
 ### 3. Create the OAuth client (this gives you the ID and secret)
 1. In the left menu click **Credentials**.
 2. Click **+ Create Credentials → OAuth client ID**.
-3. **Application type:** *Web application*. **Name:** e.g. *FolioSense login*.
+3. **Application type:** *Web application*. **Name:** e.g. *Aquilvyn login*.
 4. Under **Authorized redirect URIs** click **+ Add URI** and paste your redirect URI, for example:
    ```
    http://localhost:8080/api/v1/auth/oidc/callback
@@ -202,7 +202,7 @@ Your own PostgreSQL on 5432 and Redis on 6379 **don't clash**. Docker's database
 
 | URL | What |
 |---|---|
-| http://localhost:8080 (or the port `up` printed) | **FolioSense web app**. Register a new account; you become the owner of a new household. |
+| http://localhost:8080 (or the port `up` printed) | **Aquilvyn web app**. Register a new account; you become the owner of a new household. |
 | http://localhost:8080/api/v1/advisor/docs | Interactive API docs; every service has `/api/v1/<service>/docs`. |
 | http://localhost:3001 | Grafana (user `admin`, your `GRAFANA_ADMIN_PASSWORD`). Explore → Loki for logs, Tempo for traces. |
 
@@ -301,8 +301,8 @@ Press **Ctrl+C** in the `scripts/dev.py` terminal and in the `npm run dev` termi
    - *Import → holdings statement* (**recommended**): Zerodha Console → Portfolio → Holdings → Download (.xlsx, stocks + mutual funds), or the holdings download from ICICI Direct, Upstox, Groww, Paytm Money, SBI Securities, Kotak or any other broker (CSV or Excel) with quantity and average price. Choose **Replace** so it becomes your current portfolio.
    - *Import → transaction history*: any broker's trade book / tradebook (Zerodha, ICICI Direct, Upstox, SBI, …), a CAMS/KFintech **Detailed** CAS PDF (password = PAN in capitals) for mutual funds, or an NPS CRA transaction statement. Only accurate if the history is complete.
    - **A layout it doesn't recognise?** The import screen shows the file's columns with sample rows and a best guess; confirm which column is which **once** and every later file with that layout imports automatically (*Remembered layouts* lists them).
-   - **Tested brokers:** Zerodha is fully tested; other brokers' files should work but haven't been tested with real exports yet. If one fails, [open an issue](https://github.com/samhitrix/FolioSense/issues) — remove names, PAN, account numbers and amounts from any sample you attach.
-   - *Import → upload your NSDL/CDSL eCAS PDF* (the monthly depository statement; it is recognised automatically): not imported — it has no buy prices — but compared with what FolioSense holds, account by account: **ok / differs / missing / extra**. Use it to spot a missed trade or a broker you haven't imported yet.
+   - **Tested brokers:** Zerodha is fully tested; other brokers' files should work but haven't been tested with real exports yet. If one fails, [open an issue](https://github.com/samhitrix/Aquilvyn/issues) — remove names, PAN, account numbers and amounts from any sample you attach.
+   - *Import → upload your NSDL/CDSL eCAS PDF* (the monthly depository statement; it is recognised automatically): not imported — it has no buy prices — but compared with what Aquilvyn holds, account by account: **ok / differs / missing / extra**. Use it to spot a missed trade or a broker you haven't imported yet.
    - *Tax → import tax P&L*: your broker's capital-gains / tax P&L statement for the realised side.
    - *Retirement*: add an EPF/PPF account with its interest rate and log contributions.
 4. **Dashboard:** family net worth, today's change, XIRR, allocation, per-profile cards, top actions and live prices.
@@ -327,7 +327,7 @@ Press **Ctrl+C** in the `scripts/dev.py` terminal and in the `npm run dev` termi
 | Recommendations show "Rules-only: not AI-checked" | No AI configured. Add a key in `.env` or under Settings → AI providers. |
 | AI review "paused" / "failed" on cards | That provider hit its quota or rate limit and is skipped for 24 h; the next one in your order takes over. *Settings → Test all* shows the exact (key-masked) error. |
 | "Hold · data missing" or "No fundamentals available" stays | The Readiness engine retries with backoff (10 min → 12 h). *Advisor → Health check* shows which check fails and why; *Settings → Test all* shows which fundamentals sources answer. Free sources are sometimes blocked for hours. |
-| After updating, the app is empty (Docker) | The project was renamed from FolioMatrix to FolioSense. `fm.py up` / `up-lite` finds the old data volumes and adds `COMPOSE_PROJECT_NAME=foliomatrix` to `.env` by itself; if you ran `docker compose` directly, add that line to `.env` and start again. Nothing is deleted. |
+| After updating, the app is empty (Docker) | The project was renamed (FolioMatrix → FolioSense → Aquilvyn). `fm.py up` / `up-lite` finds the old data volumes and adds `COMPOSE_PROJECT_NAME=<old name>` to `.env` by itself; if you ran `docker compose` directly, add `COMPOSE_PROJECT_NAME=foliomatrix` (or `foliosense`, whichever `docker volume ls` shows) to `.env` and start again. Nothing is deleted. |
 | Import says the layout is unknown | Map the columns once on the import screen; it's remembered for next time. |
 | `429 Too Many Requests` | The rate limiter is working. Tune `RATE_LIMIT_*` in `.env` for local testing. |
 | Port 8080 or 5432 already in use | Stop the other program, or change the published port in `docker-compose.yml`. |

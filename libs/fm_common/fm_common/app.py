@@ -1,4 +1,4 @@
-"""Service factory: every FolioSense microservice is built the same way, so the
+"""Service factory: every Aquilvyn microservice is built the same way, so the
 cross-cutting engines (logging, rate limit, cache coherence, tracing, health) are identical
 everywhere and a service file only declares its own routers and background tasks."""
 from __future__ import annotations
@@ -56,7 +56,7 @@ def create_app(
         log.info("service.stopped")
 
     app = FastAPI(
-        title=f"FolioSense · {name}",
+        title=f"Aquilvyn · {name}",
         default_response_class=ORJSONResponse,
         lifespan=lifespan,
         docs_url=f"{settings.api_prefix}/{name}/docs",

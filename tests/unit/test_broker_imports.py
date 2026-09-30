@@ -108,7 +108,7 @@ def test_mapping_guesses_from_values_when_names_say_nothing():
 
 
 def test_depository_statement_is_a_holdings_check_across_brokers():
-    """An NSDL/CDSL eCAS has quantities but no cost: it's compared with what FolioSense holds, never imported."""
+    """An NSDL/CDSL eCAS has quantities but no cost: it's compared with what Aquilvyn holds, never imported."""
     from decimal import Decimal as D
 
     from portfolio_svc.depository import is_depository, reconcile

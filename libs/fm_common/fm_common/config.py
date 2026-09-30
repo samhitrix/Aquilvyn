@@ -1,4 +1,4 @@
-"""Settings shared by every FolioSense service. Each service subclasses ``CommonSettings``
+"""Settings shared by every Aquilvyn service. Each service subclasses ``CommonSettings``
 for its own knobs; everything is env-driven so an engine can be re-pointed without code."""
 from __future__ import annotations
 
@@ -13,15 +13,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class CommonSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    service_name: str = "foliosense"
+    service_name: str = "aquilvyn"
     environment: Literal["local", "dev", "staging", "prod", "test"] = "local"
     api_prefix: str = "/api/v1"
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8080"]
 
     # --- database: set the parts once in .env; the URL is built from them ---
-    postgres_user: str = "foliosense"
-    postgres_password: str = "foliosense"
-    postgres_db: str = "foliosense"
+    postgres_user: str = "aquilvyn"
+    postgres_password: str = "aquilvyn"
+    postgres_db: str = "aquilvyn"
     db_host: str = "localhost"          # docker-compose sets pgbouncer (services) / postgres (migrations)
     db_port: int = 5432
     database_url: str = ""              # optional full override; normally leave unset
@@ -35,8 +35,8 @@ class CommonSettings(BaseSettings):
     # --- identity (shared so every service can verify tokens locally) ---
     jwt_secret: str = Field(default="dev-only-secret-change-me-0123456789abcdef", min_length=32)
     jwt_algorithm: str = "HS256"
-    jwt_issuer: str = "foliosense"
-    jwt_audience: str = "foliosense-api"
+    jwt_issuer: str = "aquilvyn"
+    jwt_audience: str = "aquilvyn-api"
     access_token_ttl_seconds: int = 900
 
     # --- rate limiting ---

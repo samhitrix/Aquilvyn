@@ -121,7 +121,7 @@ async def _mapped(db: AsyncSession, principal: Principal, filename: str, content
     elif tmpl is not None:
         kind, fields = tmpl.kind, dict(tmpl.mapping)
     else:
-        raise HTTPException(422, {"message": "FolioSense doesn't know this file's layout yet — tell it which column is which (once).",
+        raise HTTPException(422, {"message": "Aquilvyn doesn't know this file's layout yet — tell it which column is which (once).",
                                   "needs_mapping": cand})
     if kind not in mapmod.FIELDS:
         raise HTTPException(422, "Choose whether the file is a trade history or a holdings statement")

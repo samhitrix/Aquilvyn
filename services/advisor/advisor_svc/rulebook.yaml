@@ -1,5 +1,5 @@
 # ============================================================================================
-#  FolioSense Advisor Rulebook (E21) — versioned, human-readable, unit-tested.
+#  Aquilvyn Advisor Rulebook (E21) — versioned, human-readable, unit-tested.
 #  Rules are evaluated top-to-bottom; the FIRST rule whose `when` conditions all hold decides
 #  the action. Every rule evaluated (matched or not, with the failing condition) is recorded in
 #  the report's decision trace, so any call can be audited and reproduced.

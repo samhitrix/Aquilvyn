@@ -1,4 +1,4 @@
-"""Column mappings remembered for broker file layouts FolioSense didn't recognise
+"""Column mappings remembered for broker file layouts Aquilvyn didn't recognise
 
 Revision ID: 0013
 Revises: 0012

@@ -203,7 +203,7 @@ class SimulatedProvider:
             "{sec} sector update: what it means for {n}",
         ]
         return [
-            {"title": t.format(n=s.name, sec=s.sector or "market"), "publisher": "FolioSense Simulator",
+            {"title": t.format(n=s.name, sec=s.sector or "market"), "publisher": "Aquilvyn Simulator",
              "link": None, "published_at": datetime.fromtimestamp(now - i * 5400, UTC).isoformat(), "simulated": True}
             for i, t in enumerate(templates[:limit])
         ]

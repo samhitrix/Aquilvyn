@@ -61,7 +61,7 @@ async def master() -> dict[str, dict[str, Any]]:
         else:
             data = {}
             last_err = ""
-            async with httpx.AsyncClient(timeout=30, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0 FolioSense"}) as c:
+            async with httpx.AsyncClient(timeout=30, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0 Aquilvyn"}) as c:
                 for url in URLS:
                     try:
                         resp = await c.get(url)

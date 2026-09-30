@@ -43,7 +43,7 @@ export default function WelcomePage() {
         ...(f.noPan ? {} : { pan }), ...(f.slab !== "" ? { tax_slab_pct: Number(f.slab) } : {}),
       } });
       qc.invalidateQueries({ queryKey: qk.profiles });
-      toast("ok", "Welcome to FolioSense", "Next: import a CAS or your broker's holdings statement.");
+      toast("ok", "Welcome to Aquilvyn", "Next: import a CAS or your broker's holdings statement.");
       router.replace("/import");
     } catch (e) {
       setErr(e);

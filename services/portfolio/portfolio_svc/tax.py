@@ -12,7 +12,7 @@ Set-off: short-term capital losses offset any capital gain, long-term losses onl
 leftovers carry forward 8 years (speculative: 4). Losses go first against the most heavily taxed gains.
 Health & education cess 4 %. Surcharge is not modelled (it applies above ₹50 lakh of income).
 
-This covers only what FolioSense sees (investments) — not salary, rent, TDS or deductions — so it
+This covers only what Aquilvyn sees (investments) — not salary, rent, TDS or deductions — so it
 is an estimate to plan with, not a return to file."""
 from __future__ import annotations
 
@@ -151,7 +151,7 @@ def advance_tax(fy: str, total: float, today: date) -> dict[str, Any] | None:
         due = date(y + 1 if m == 3 else y, m, d)
         if due >= today:
             return {"due_date": due.isoformat(), "cumulative_pct": pct, "amount_by_then": round(total * pct / 100, 2),
-                    "note": "Only the tax on investment income FolioSense sees — add salary / other income, minus TDS already deducted."}
+                    "note": "Only the tax on investment income Aquilvyn sees — add salary / other income, minus TDS already deducted."}
     return None
 
 
