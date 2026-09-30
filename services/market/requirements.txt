@@ -1,0 +1,5 @@
+-e ../../libs/fm_common
+numpy==2.2.0
+yfinance==1.7.0
+curl_cffi==0.16.3  # Chrome-like TLS: Yahoo / NSE refuse plain Python clients (429 / 403)
+arq==0.26.1

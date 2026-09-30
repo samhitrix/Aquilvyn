@@ -1,0 +1,262 @@
+# FolioSense — full local stack.
+#   make up        everything incl. observability (Loki, Tempo, Grafana, Vector, OTel collector)
+#   make up-lite   core services only (less RAM)
+# Open http://localhost:8080  (Grafana: http://localhost:3001)
+
+name: foliosense
+
+# Container logs are capped (Docker's default json-file driver keeps them forever).
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-service: &service
+  env_file: .env
+  restart: unless-stopped
+  logging: *logging
+  environment: &svc-env
+    # DB URL is built from POSTGRES_USER/PASSWORD/DB in .env + these (never repeat the password)
+    DB_HOST: pgbouncer
+    DB_PORT: "6432"
+    DB_BEHIND_PGBOUNCER: "true"
+    REDIS_URL: redis://redis:6379/0
+    OTEL_ENABLED: ${OTEL_ENABLED:-true}
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    IDENTITY_URL: http://identity:8000
+    PORTFOLIO_URL: http://portfolio:8000
+    MARKET_URL: http://market:8000
+    ANALYTICS_URL: http://analytics:8000
+    ADVISOR_URL: http://advisor:8000
+    DASHBOARD_URL: http://dashboard:8000
+    READINESS_URL: http://readiness:8000
+  depends_on:
+    migrate: { condition: service_completed_successfully }
+    redis: { condition: service_healthy }
+    pgbouncer: { condition: service_started }
+  labels:
+    logging: "vector"
+
+services:
+  # ------------------------------------------------------------------ data layer
+  postgres:
+    logging: *logging
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-foliosense}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foliosense}
+      POSTGRES_DB: ${POSTGRES_DB:-foliosense}
+    command: ["postgres", "-c", "max_connections=200", "-c", "shared_buffers=256MB", "-c", "log_min_duration_statement=500"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    # Not needed by the app (services use the internal Docker network). Published only on a
+    # non-clashing host port so pgAdmin/psql can reach it; your own PostgreSQL keeps 5432.
+    ports: ["127.0.0.1:${FM_DB_PORT:-55432}:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 20
+
+  pgbouncer:
+    logging: *logging
+    image: edoburu/pgbouncer:latest
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_USER: ${POSTGRES_USER:-foliosense}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-foliosense}
+      DB_NAME: ${POSTGRES_DB:-foliosense}
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction          # services use SET LOCAL + no server-side prepared stmt reuse
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 40
+      LISTEN_PORT: 6432
+    depends_on: { postgres: { condition: service_healthy } }
+
+  redis:
+    logging: *logging
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "noeviction"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  migrate:
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: migrate }
+    image: foliosense/migrate:local
+    logging: *logging
+    env_file: .env
+    environment:
+      DB_HOST: postgres           # migrations bypass PgBouncer (DDL needs a session connection)
+      DB_PORT: "5432"
+    depends_on: { postgres: { condition: service_healthy } }
+    restart: "no"
+
+  # ------------------------------------------------------------------ microservices
+  identity:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: identity } }
+    image: foliosense/identity:local
+  portfolio:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: portfolio } }
+    image: foliosense/portfolio:local
+  market:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: market } }
+    image: foliosense/market:local
+  analytics:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: analytics } }
+    image: foliosense/analytics:local
+  advisor:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: advisor } }
+    image: foliosense/advisor:local
+  dashboard:
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: dashboard } }
+    image: foliosense/dashboard:local
+  readiness:   # the Readiness Engine: checks every holding's data / analysis / AI review and fixes what's missing
+    <<: *service
+    build: { context: ., dockerfile: infra/docker/python-service.Dockerfile, target: service, args: { SERVICE: readiness } }
+    image: foliosense/readiness:local
+
+  # ------------------------------------------------------------------ async workers (E33b, Arq)
+  market-worker:
+    <<: *service
+    image: foliosense/market:local
+    command: ["arq", "market_svc.worker.WorkerSettings"]
+    healthcheck: { disable: true }
+    depends_on: { market: { condition: service_started } }
+  portfolio-worker:
+    <<: *service
+    image: foliosense/portfolio:local
+    command: ["arq", "portfolio_svc.worker.WorkerSettings"]
+    healthcheck: { disable: true }
+    depends_on: { portfolio: { condition: service_started } }
+  advisor-worker:
+    <<: *service
+    image: foliosense/advisor:local
+    command: ["arq", "advisor_svc.worker.WorkerSettings"]
+    healthcheck: { disable: true }
+    depends_on: { advisor: { condition: service_started } }
+  readiness-worker:
+    <<: *service
+    image: foliosense/readiness:local
+    command: ["arq", "readiness_svc.worker.WorkerSettings"]
+    healthcheck: { disable: true }
+    depends_on: { readiness: { condition: service_started } }
+
+  # ------------------------------------------------------------------ web + gateway
+  web:
+    logging: *logging
+    build: { context: ./web, dockerfile: Dockerfile }
+    image: foliosense/web:local
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://gateway:8080
+    labels: { logging: "vector" }
+
+  gateway:
+    logging: *logging
+    # configs are baked into small images (no bind mounts): Docker Desktop on Windows can fail to
+    # share a drive ("error while creating mount source path … file exists"); a build never does
+    build:
+      context: ./infra/nginx
+      dockerfile_inline: |
+        FROM nginx:1.27-alpine
+        COPY nginx.conf /etc/nginx/nginx.conf
+        RUN sed -i 's/\r$//' /etc/nginx/nginx.conf
+    image: foliosense/gateway:local
+    restart: unless-stopped
+    ports: ["${FM_HTTP_PORT:-8080}:8080"]     # `python scripts/fm.py up` picks a free port automatically
+    depends_on: [identity, portfolio, market, analytics, advisor, dashboard, readiness, web]
+    labels: { logging: "vector" }
+
+  healthping:
+    logging: *logging
+    build:
+      context: ./infra/healthping
+      dockerfile_inline: |
+        FROM curlimages/curl:8.10.1
+        COPY ping.sh /ping.sh
+    image: foliosense/healthping:local
+    restart: unless-stopped
+    # strip CR in case the repo was checked out on Windows with CRLF line endings
+    entrypoint: ["/bin/sh", "-c", "tr -d '\\r' < /ping.sh > /tmp/ping.sh && exec sh /tmp/ping.sh"]
+    environment: { PING_INTERVAL: "240" }
+    depends_on: [gateway]
+
+  # ------------------------------------------------------------------ observability (profile)
+  vector:
+    logging: *logging
+    build:
+      context: ./infra/vector
+      dockerfile_inline: |
+        FROM timberio/vector:0.41.1-alpine
+        COPY vector.yaml /etc/vector/vector.yaml
+    image: foliosense/vector:local
+    container_name: foliosense-vector
+    profiles: ["observability"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # Docker's own socket (inside Docker, not your drive)
+    command: ["--config", "/etc/vector/vector.yaml"]
+    depends_on: [loki]
+  loki:
+    logging: *logging
+    build:
+      context: ./infra/loki
+      dockerfile_inline: |
+        FROM grafana/loki:3.2.1
+        COPY loki.yaml /etc/loki/loki.yaml
+    image: foliosense/loki:local
+    profiles: ["observability"]
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes: ["lokidata:/loki"]
+  tempo:
+    logging: *logging
+    build:
+      context: ./infra/tempo
+      dockerfile_inline: |
+        FROM grafana/tempo:2.6.1
+        COPY tempo.yaml /etc/tempo.yaml
+    image: foliosense/tempo:local
+    profiles: ["observability"]
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes: ["tempodata:/var/tempo"]
+  otel-collector:
+    logging: *logging
+    build:
+      context: ./infra/otel
+      dockerfile_inline: |
+        FROM otel/opentelemetry-collector-contrib:0.112.0
+        COPY collector.yaml /etc/otelcol/config.yaml
+    image: foliosense/otel-collector:local
+    profiles: ["observability"]
+    command: ["--config=/etc/otelcol/config.yaml"]
+    depends_on: [tempo]
+  grafana:
+    logging: *logging
+    build:
+      context: ./infra/grafana
+      dockerfile_inline: |
+        FROM grafana/grafana:11.3.0
+        COPY provisioning /etc/grafana/provisioning
+    image: foliosense/grafana:local
+    profiles: ["observability"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes: ["grafanadata:/var/lib/grafana"]
+    ports: ["${FM_GRAFANA_PORT:-3001}:3000"]
+    depends_on: [loki, tempo]
+
+volumes:
+  pgdata:
+  redisdata:
+  lokidata:
+  tempodata:
+  grafanadata:

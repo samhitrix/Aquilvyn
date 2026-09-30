@@ -1,0 +1,20 @@
+# Keep the build context small: every byte here is sent to Docker (and cached) on each build.
+.git
+.github
+**/node_modules
+web/.next
+web
+.dev
+.venv
+venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+.env
+.env.*
+!.env.example
+*.log
+docs
+tests
+dump.rdb
