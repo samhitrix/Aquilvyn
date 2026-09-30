@@ -29,6 +29,9 @@ It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold fo
 | Risk-aware | Automatic trailing stops for trades, volatility-based buy sizing, smaller steps in a correction |
 | Knows locked money | EPF/PPF/NPS are never suggested for selling; rebalancing is done by redirecting new money |
 
+> [!NOTE]
+> **Broker support:** imports are **fully tested with Zerodha**. Files from other brokers (ICICI Direct, Upstox, Groww, Paytm Money, SBI Securities, Kotak and others) are supported and should work, but have **not been tested with real exports yet**. If a file doesn't import correctly, please [open an issue](https://github.com/samhitrix/FolioSense/issues) with the broker name, the report you downloaded and the error message — and attach a sample only after removing names, PAN, account numbers and amounts.
+
 ---
 
 ## How it works
