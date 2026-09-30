@@ -47,7 +47,7 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
     <main className="grid min-h-screen place-items-center p-4">
       <form onSubmit={submit} className="card w-full max-w-sm space-y-4 p-6 shadow-sm">
         <div>
-          <div className="text-xl font-semibold">Folio<span className="text-brand">Matrix</span></div>
+          <div className="text-xl font-semibold">Folio<span className="text-brand">Sense</span></div>
           <p className="mt-1 text-sm text-ink2">{mode === "login" ? "Sign in to your family's wealth dashboard" : "Create your family's workspace"}</p>
         </div>
         {mode === "register" && (

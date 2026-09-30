@@ -159,3 +159,13 @@ def test_profile_email_and_mobile_are_optional_and_tidied():
     for bad in ({"email": "not-an-email"}, {"mobile": "12345"}):
         with pytest.raises(ValueError):
             ProfilePatch(**bad)
+
+
+def test_gmail_login_needs_oidc_enabled_and_both_keys():
+    from identity_svc.config import IdentitySettings
+
+    keys = {"oidc_client_id": "id.apps.googleusercontent.com", "oidc_client_secret": "secret"}
+    assert IdentitySettings(oidc_enabled=True, **keys).sso_ready
+    assert not IdentitySettings(oidc_enabled=False, **keys).sso_ready  # keys alone don't show the button
+    assert not IdentitySettings(oidc_enabled=True, oidc_client_id="id", oidc_client_secret=" ").sso_ready
+    assert not IdentitySettings(oidc_enabled=True).sso_ready

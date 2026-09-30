@@ -9,7 +9,7 @@ It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold fo
 > Status: **early release — runs locally** on Windows, macOS or Linux, with or without Docker. No real orders are ever placed; broker execution is planned for a later phase and switched off.
 > Recommendations are analysis for personal and family research. They are **not** SEBI-registered investment advice.
 
-**Contents:** [What's different](#what-makes-foliosense-different) · [How it works](#how-it-works) · [Architecture](#architecture) · [How a call is made](#how-the-advisor-makes-a-call) · [Readiness engine](#the-readiness-engine-self-healing-data) · [Engines](#engine-catalogue) · [Features](#features) · [Quick start](#quick-start) · [Configuration](#configuration) · [Roadmap](#roadmap) · [Contributing](#contributing)
+**Contents:** [What's different](#what-makes-foliosense-different) · [How it works](#how-it-works) · [Screenshots](#screenshots) · [Architecture](#architecture) · [How a call is made](#how-the-advisor-makes-a-call) · [Readiness engine](#the-readiness-engine-self-healing-data) · [Engines](#engine-catalogue) · [Features](#features) · [Quick start](#quick-start) · [Configuration](#configuration) · [Roadmap](#roadmap) · [Contributing](#contributing)
 
 ---
 
@@ -39,6 +39,20 @@ It tracks Stocks, ETFs, Mutual Funds, NPS, EPF, VPF, PPF, FDs, bonds and gold fo
 <p align="center"><img src="docs/how-it-works.svg" alt="How FolioSense makes a call: data in → analysis engines split the evidence into strengths and warnings → rulebook decides → risk and tax checks → AI second opinion → you decide" width="100%"></p>
 
 Data comes in from market sources and your own statements. The analysis engines score it and split the evidence into **strengths** and **warnings**. The versioned **rulebook** makes the call, **risk & tax checks** size it and set stops, **AI reviewers** give an independent second opinion, and **you** always have the final say. The **Readiness engine** keeps every input fresh, and the **Scorecard** grades every past call against NIFTY.
+
+## Screenshots
+
+*Demo family with simulated prices — no real data.* Click any image to see it full size.
+
+<p align="center"><a href="docs/screenshots/dashboard.png"><img src="docs/screenshots/dashboard.png" alt="Family dashboard" width="100%"></a><br><b>Family dashboard</b></p>
+
+<table>
+<tr><td width="50%"><b>Holdings</b><br><a href="docs/screenshots/holdings.png"><img src="docs/screenshots/holdings.png" alt="Holdings"></a></td><td width="50%"><b>Advisor</b><br><a href="docs/screenshots/advisor.png"><img src="docs/screenshots/advisor.png" alt="Advisor"></a></td></tr>
+<tr><td width="50%"><b>Advisor — full report</b><br><a href="docs/screenshots/advisor-report.png"><img src="docs/screenshots/advisor-report.png" alt="Advisor — full report"></a></td><td width="50%"><b>Analytics</b><br><a href="docs/screenshots/analytics.png"><img src="docs/screenshots/analytics.png" alt="Analytics"></a></td></tr>
+<tr><td width="50%"><b>Tax</b><br><a href="docs/screenshots/tax.png"><img src="docs/screenshots/tax.png" alt="Tax"></a></td><td width="50%"><b>Markets</b><br><a href="docs/screenshots/markets.png"><img src="docs/screenshots/markets.png" alt="Markets"></a></td></tr>
+<tr><td width="50%"><b>Transactions</b><br><a href="docs/screenshots/transactions.png"><img src="docs/screenshots/transactions.png" alt="Transactions"></a></td><td width="50%"><b>Import</b><br><a href="docs/screenshots/import.png"><img src="docs/screenshots/import.png" alt="Import"></a></td></tr>
+<tr><td width="50%"><b>Family</b><br><a href="docs/screenshots/family.png"><img src="docs/screenshots/family.png" alt="Family"></a></td><td width="50%"><b>Settings</b><br><a href="docs/screenshots/settings.png"><img src="docs/screenshots/settings.png" alt="Settings"></a></td></tr>
+</table>
 
 ## Architecture
 
@@ -226,7 +240,7 @@ Everything works without any API keys: prices come from free public sources and 
 | `MARKET_DATA_PROVIDER` | `yahoo` (default) for live NSE/BSE prices, or `simulated` for an offline demo |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `CLOUDFLARE_API_TOKEN`, `OLLAMA_MODEL` | AI reviewers — use any mix; they are tried in the order you set |
 | `FINNHUB_API_KEY`, `ALPHAVANTAGE_API_KEY` | Extra fundamentals sources (optional) |
-| `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | "Login with Gmail" (Google OAuth client, type *Web application*) |
+| `OIDC_ENABLED`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | "Login with Gmail" — shown only when `OIDC_ENABLED=true` and both keys are set ([setup guide](docs/RUNNING.md#login-with-gmail-optional)) |
 
 **Settings → Test all** checks every AI model and data source and shows why one fails. Keys stay in your own `.env` or are stored encrypted in your database — never commit them. Details: [docs/RUNNING.md](docs/RUNNING.md).
 

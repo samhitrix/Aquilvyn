@@ -68,12 +68,78 @@ Optional settings:
 | `GROQ_API_KEY` + `GROQ_MODEL`, `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_MODEL` | Free-tier AI reviewers, good as fallbacks. |
 | `OLLAMA_MODEL` (+ `OLLAMA_BASE_URL`) | A fully local AI reviewer running through Ollama. |
 | `AI_PRIMARY_PROVIDER` | Which AI is tried first. The rest follow in the order set under *Settings → AI*; one that runs out of quota is skipped for 24 hours. |
-| `OIDC_*` | "Login with Gmail" — turns on once `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` are set (Google Cloud → APIs & Services → Credentials → OAuth client ID, type *Web application*). |
+| `OIDC_*` | "Login with Gmail" — shown when `OIDC_ENABLED=true` and `OIDC_CLIENT_ID` + `OIDC_CLIENT_SECRET` are set. Step-by-step: [Login with Gmail](#login-with-gmail-optional). |
 
 With no AI keys at all, everything still works in **rules-only** mode, and the UI says so.
 AI keys can also be added later in the web app under **Settings → AI providers**. Those are stored encrypted per household. **Settings → Test all** checks every AI model and every data source in one go and shows why one fails.
 
 > **Keep keys private.** API keys go only in `.env` (git-ignored) or in Settings — never in `.env.example`, a commit, an issue or a chat. If a key was ever pasted somewhere shared, revoke it at the provider and create a new one. Error messages in the app mask keys automatically.
+
+---
+
+## Login with Gmail (optional)
+
+FolioSense can let people sign in with their Google account. You need a **Client ID** and **Client Secret** from Google — free, about 10 minutes, done once.
+
+**Which address to use.** Everything below uses your app's address:
+- Docker (`fm.py up` / `up-lite`): `http://localhost:8080` — or the port `fm.py` printed if 8080 was busy.
+- Without Docker (`fm.py dev` + `npm run dev`): `http://localhost:3000`.
+
+So the **redirect URI** is `<app address>/api/v1/auth/oidc/callback`, e.g. `http://localhost:8080/api/v1/auth/oidc/callback`.
+
+### 1. Create or select a Google Cloud project
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and sign in with your Google account.
+2. Click the project drop-down at the top left → **New Project** (or pick an existing project).
+3. Give it a name (e.g. *FolioSense*) and click **Create**.
+
+### 2. Configure the OAuth consent screen
+This must be done before you can create credentials.
+1. In the left menu go to **APIs & Services → OAuth consent screen** (newer consoles call it **Google Auth Platform → Branding / Audience / Data Access**).
+2. Choose the user type:
+   - **External** — anyone with a Gmail account can sign in (the usual choice for a family).
+   - **Internal** — only accounts in your own Google Workspace organisation.
+3. Click **Create** and fill in the required fields:
+   - **App name:** e.g. *FolioSense*
+   - **User support email** and **Developer contact information:** your email address
+4. Click **Save and Continue**.
+5. On the **Scopes** page click **Add or Remove Scopes** and select `openid`, `.../auth/userinfo.email` and `.../auth/userinfo.profile`, then **Save and Continue**.
+6. If you chose **External**: under **Test users**, add the Gmail address of **every family member** who will sign in. While the app is in *Testing* mode, only these addresses can log in.
+
+### 3. Create the OAuth client (this gives you the ID and secret)
+1. In the left menu click **Credentials**.
+2. Click **+ Create Credentials → OAuth client ID**.
+3. **Application type:** *Web application*. **Name:** e.g. *FolioSense login*.
+4. Under **Authorized redirect URIs** click **+ Add URI** and paste your redirect URI, for example:
+   ```
+   http://localhost:8080/api/v1/auth/oidc/callback
+   ```
+   It must match `OIDC_REDIRECT_URI` in `.env` **character for character** — same `http`, host, port and no trailing slash.
+5. Click **Create**. A pop-up shows your **Client ID** and **Client Secret** — copy both.
+
+### 4. Put them in `.env`
+```ini
+# ---------- Login with Gmail ----------
+OIDC_ENABLED=true
+OIDC_PROVIDER_NAME=google
+OIDC_ISSUER=https://accounts.google.com
+OIDC_CLIENT_ID=your-client-id.apps.googleusercontent.com
+OIDC_CLIENT_SECRET=GOCSPX-your-client-secret
+OIDC_REDIRECT_URI=http://localhost:8080/api/v1/auth/oidc/callback
+OIDC_POST_LOGIN_REDIRECT=http://localhost:8080/dashboard
+```
+Use your own app address in the last two lines (e.g. `http://localhost:3000/...` without Docker). The **Login with Gmail** button appears only when `OIDC_ENABLED=true` **and** both the Client ID and Secret are set — set `OIDC_ENABLED=false` to hide it again without deleting the keys.
+
+Restart so the new settings are picked up: `python scripts/fm.py up-lite` (Docker) or stop and start `python scripts/fm.py dev`. The login page now shows **Login with Gmail**.
+
+**If it doesn't work:**
+
+| What you see | Fix |
+|---|---|
+| Google says `redirect_uri_mismatch` | The URI in Google Cloud and `OIDC_REDIRECT_URI` differ — check port, `http` vs `https` and trailing slash |
+| `access_denied` / "app has not completed verification" | Add that Gmail address under **Test users** (step 2.6) |
+| No "Login with Gmail" button | `OIDC_ENABLED` isn't `true`, `OIDC_CLIENT_ID` or `OIDC_CLIENT_SECRET` is empty, or the app wasn't restarted |
+
+Keep the Client Secret like a password: only in `.env`, never in a commit, issue or chat.
 
 ---
 

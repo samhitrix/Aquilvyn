@@ -13,7 +13,7 @@ class IdentitySettings(CommonSettings):
     cookie_secure: bool = False
     cookie_samesite: Literal["lax", "strict", "none"] = "strict"
 
-    oidc_enabled: bool = False  # no longer needed: Login with Gmail turns on when the client id + secret are set
+    oidc_enabled: bool = False  # Login with Gmail is shown only when this is true AND the client id + secret are set
     oidc_provider_name: str = "google"
     oidc_issuer: str = "https://accounts.google.com"
     oidc_client_id: str = ""
@@ -24,9 +24,8 @@ class IdentitySettings(CommonSettings):
 
     @property
     def sso_ready(self) -> bool:
-        """Login with Gmail is on as soon as the Google client id + secret are in .env (OIDC_ENABLED=true is not needed —
-        a copied .env.example left it false, which silently switched it off)."""
-        return bool(self.oidc_client_id.strip() and self.oidc_client_secret.strip())
+        """Login with Gmail is offered only when OIDC_ENABLED=true and the Google client id + secret are set."""
+        return bool(self.oidc_enabled and self.oidc_client_id.strip() and self.oidc_client_secret.strip())
 
     @property
     def login_page(self) -> str:

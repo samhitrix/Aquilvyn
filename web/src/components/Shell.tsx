@@ -45,7 +45,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen md:flex">
       <aside className={clsx("sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface p-3 transition-[width] md:flex", collapsed ? "w-16" : "w-56")}>
         <div className="flex items-center justify-between px-1 py-2">
-          {!collapsed && <Link href="/dashboard" className="px-1 text-lg font-semibold">Folio<span className="text-brand">Matrix</span></Link>}
+          {!collapsed && <Link href="/dashboard" className="px-1 text-lg font-semibold">Folio<span className="text-brand">Sense</span></Link>}
           <button onClick={toggleSidebar} className="rounded-lg px-2 py-1 text-ink2 hover:bg-page" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand" : "Collapse"}>
             {collapsed ? "»" : "«"}
           </button>
@@ -66,7 +66,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface/95 px-4 py-3 backdrop-blur md:hidden">
-        <span className="font-semibold">Folio<span className="text-brand">Matrix</span></span>
+        <span className="font-semibold">Folio<span className="text-brand">Sense</span></span>
         <div className="flex gap-3 text-sm text-ink2">
           <Link href="/transactions">Txns</Link><Link href="/family">Family</Link>
           <button onClick={toggleTheme} aria-label="Toggle light/dark theme">◐</button><Link href="/settings" aria-label="Settings">⚙</Link>
