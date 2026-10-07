@@ -1,0 +1,7 @@
+line-length = 140
+target-version = "py311"
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "ASYNC"]
+ignore = ["E501", "E731", "B008", "UP040", "E702", "B904"]
+[lint.isort]
+known-first-party = ["fm_common", "identity_svc", "portfolio_svc", "market_svc", "analytics_svc", "advisor_svc", "dashboard_svc", "readiness_svc"]

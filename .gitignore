@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+.env
+node_modules/
+.next/
+.pytest_cache/
+.ruff_cache/
+services/identity/_old/
+.dev/
+dump.rdb
+*.tsbuildinfo
+.env.bak
+
+# private planning notes — kept locally in docs/, never pushed
+docs/PLAN.md

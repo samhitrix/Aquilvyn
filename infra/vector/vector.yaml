@@ -1,0 +1,36 @@
+# E33e Log Aggregation Engine — tails every container's stdout (single-line JSON from structlog /
+# nginx), parses it, keeps only low-cardinality labels, and ships to Loki.
+sources:
+  docker:
+    type: docker_logs
+    exclude_containers: ["aquilvyn-vector"]
+
+transforms:
+  parse:
+    type: remap
+    inputs: [docker]
+    source: |
+      parsed, err = parse_json(.message)
+      if err == null && is_object(parsed) {
+        . = merge!(., parsed)
+      }
+      .service = .service || .label."com.docker.compose.service" || "unknown"
+      .level = .level || "info"
+      del(.label)
+
+sinks:
+  loki:
+    type: loki
+    inputs: [parse]
+    endpoint: http://loki:3100
+    encoding: { codec: json }
+    labels:
+      service: "{{ service }}"
+      level: "{{ level }}"
+      container: "{{ container_name }}"
+    out_of_order_action: accept
+  # uncomment to also ship to Elasticsearch (ELK)
+  # elastic:
+  #   type: elasticsearch
+  #   inputs: [parse]
+  #   endpoints: ["http://elasticsearch:9200"]

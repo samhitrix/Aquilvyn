@@ -1,0 +1,8 @@
+-e ../../libs/fm_common
+arq==0.26.1
+python-multipart==0.0.19
+casparser==0.8.1
+pymupdf==1.24.14  # casparser's engine for NSDL / CDSL depository CAS (pdfminer reads only CAMS / KFintech)
+openpyxl==3.1.5
+xlrd==2.0.1
+cryptography>=43

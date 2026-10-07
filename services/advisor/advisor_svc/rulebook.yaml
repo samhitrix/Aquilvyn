@@ -1,0 +1,340 @@
+# ============================================================================================
+#  Aquilvyn Advisor Rulebook (E21) — versioned, human-readable, unit-tested.
+#  Rules are evaluated top-to-bottom; the FIRST rule whose `when` conditions all hold decides
+#  the action. Every rule evaluated (matched or not, with the failing condition) is recorded in
+#  the report's decision trace, so any call can be audited and reproduced.
+#
+#  Condition ops: == != < <= > >= in not_in is_true is_false exists
+#  `value` may reference another fact with a leading "$" (e.g. "$dd.threshold_neg").
+# ============================================================================================
+version: "2026.10.1"
+
+rules:
+  # ---------------- Guards ----------------
+  - id: data_insufficient
+    action: REVIEW
+    horizon: n/a
+    base_confidence: 0.5
+    severity: 1
+    when:
+      - {fact: dq.grade, op: ==, value: "D"}
+    reason: "Data quality is too low (grade D) to make a confident call — verify prices/fundamentals first."
+
+  # ---------------- Short-term trades: discipline first ----------------
+  - id: trade_stop_hit
+    action: EXIT
+    horizon: short_term
+    base_confidence: 0.85
+    severity: 5
+    urgent: true
+    when:
+      - {fact: intent, op: ==, value: trade}
+      - {fact: trade.stop_hit, op: is_true}
+    reason: "The price closed below this trade's stop-loss (yours, or the automatic one that trails the price: the 22-day high minus 3 × the average daily range) — honour the plan and cap the loss."
+
+  # ---------------- Data gates: no buy / sell call without the data to back it ----------------
+  - id: data_no_price_history
+    action: REVIEW
+    horizon: n/a
+    base_confidence: 0.5
+    severity: 1
+    when:
+      - {fact: dq.no_history, op: is_true}
+    reason: "Not enough price history to judge the trend — no buy or sell call until it loads; keep holding meanwhile."
+
+  - id: data_no_fundamentals
+    action: REVIEW
+    horizon: n/a
+    base_confidence: 0.5
+    severity: 1
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: dq.no_fundamentals, op: is_true}
+    reason: "Company fundamentals (valuation, profits, debt) are unavailable — no buy or sell call until they load; keep holding meanwhile."
+
+  - id: trade_setup_failed
+    action: EXIT
+    horizon: short_term
+    base_confidence: 0.75
+    severity: 4
+    urgent: true
+    when:
+      - {fact: intent, op: ==, value: trade}
+      - {fact: dd.triggered, op: is_true}
+      - {fact: tech.above_20dma, op: is_false}    # a short-term setup is judged on its short-term trend, not the 200-DMA
+    reason: "Short-term trade has fallen past its drawdown limit and below its 20-day average — the setup has failed; don't let a trade turn into an investment."
+
+  - id: trade_target_hit
+    action: TRIM
+    horizon: short_term
+    base_confidence: 0.75
+    severity: 3
+    when:
+      - {fact: intent, op: ==, value: trade}
+      - {fact: trade.target_hit, op: is_true}
+    reason: "Target price reached — book at least partial profits and trail a stop on the rest."
+
+  # ---------------- Broken stories ----------------
+  - id: broken_company
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.8
+    severity: 5
+    urgent: true
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: dd.triggered, op: is_true}
+      - {fact: dd.driver, op: ==, value: stock_specific}
+      - {fact: fund.score, op: <, value: 45}
+      - {fact: tech.above_200dma, op: is_false}
+    reason: "The fall is company-specific (not the market), fundamentals are weak and the long-term trend is down — the thesis looks broken."
+
+  - id: governance_red_flags
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 4
+    urgent: true
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: fund.red_flag_count, op: ">=", value: 2}
+      - {fact: fund.score, op: <, value: 40}
+    reason: "Multiple red flags (leverage / pledge / losses / earnings collapse) with weak fundamentals."
+
+  # A broken thesis is acted on, never left on "review": sell half now, the rest if the trend is weak too
+  # or it is still broken ~45 days later (about one results cycle).
+  - id: thesis_failed_weak_trend
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.75
+    severity: 4
+    when:
+      - {fact: thesis.failed_count, op: ">=", value: 1}
+      - {fact: tech.score, op: <, value: 35}
+    reason: "Your own reason for owning this no longer holds and the price trend is weak too — exit."
+
+  - id: thesis_failed_persistent
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.75
+    severity: 4
+    when:
+      - {fact: thesis.failed_count, op: ">=", value: 1}
+      - {fact: watch.days, op: ">=", value: 45}
+    reason: "Your thesis check has been failing for over 45 days (about one results cycle) — sell the rest."
+
+  - id: thesis_failed
+    action: TRIM
+    trim_fraction: 0.5
+    horizon: long_term
+    base_confidence: 0.75
+    severity: 3
+    when:
+      - {fact: thesis.failed_count, op: ">=", value: 1}
+    reason: "One of your own thesis checks no longer holds — sell half now; sell the rest if it's still failing at the next results or the trend turns weak."
+
+  # Cost leak first: a Regular plan should be switched to Direct before any "add more" advice.
+  - id: regular_plan_drag
+    action: SWITCH
+    horizon: long_term
+    base_confidence: 0.85
+    severity: 2
+    when:
+      - {fact: asset_type, op: ==, value: mutual_fund}
+      - {fact: mf.is_regular, op: is_true}
+    reason: "You're in the Regular plan — the same fund's Direct plan costs less every year (distributor commission)."
+
+  # ---------------- Drawdowns that are opportunities ----------------
+  - id: quality_on_sale
+    action: ACCUMULATE
+    horizon: long_term
+    base_confidence: 0.75
+    severity: 3
+    when:
+      - {fact: asset_type, op: in, value: [stock]}
+      - {fact: dd.triggered, op: is_true}
+      - {fact: dd.driver, op: in, value: [market, sector]}
+      - {fact: fund.score, op: ">=", value: 60}
+      - {fact: intent, op: in, value: [core, satellite]}
+      - {fact: pos.over_cap, op: is_false}
+      - {fact: regime.blocks_new_risk, op: is_false}   # correction / bear: no new money into satellite ideas
+      - {fact: tech.stabilised, op: is_true}           # it has stopped falling: no fresh 20-day low for 5 sessions, above its 20-day average
+    reason: "The fall is mostly market/sector-driven, the business remains strong and the price has stopped falling — accumulate in tranches."
+
+  - id: quality_on_sale_wait
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 1
+    actionable: false
+    when:
+      - {fact: asset_type, op: in, value: [stock]}
+      - {fact: dd.triggered, op: is_true}
+      - {fact: dd.driver, op: in, value: [market, sector]}
+      - {fact: fund.score, op: ">=", value: 60}
+      - {fact: intent, op: in, value: [core, satellite]}
+    reason: "A strong business down with its market/sector — but it is still falling (fresh lows). Don't sell; wait until it stops making new lows before buying more."
+
+  - id: fund_dip_keep_sip
+    action: ACCUMULATE
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 2
+    when:
+      - {fact: asset_type, op: in, value: [mutual_fund, etf]}
+      - {fact: dd.triggered, op: is_true}
+      - {fact: mf.score, op: ">=", value: 55}
+    reason: "A good fund is down with the market — continue (or top up) SIPs; falls lower your average cost."
+
+  - id: correction_hold_quality
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 1
+    when:
+      - {fact: regime, op: in, value: [correction, bear]}
+      - {fact: intent, op: ==, value: core}
+      - {fact: fund.score, op: ">=", value: 60}
+    reason: "Market is in a correction; quality CORE holdings should not be panic-sold."
+
+  # ---------------- Risk & sizing ----------------
+  - id: overweight_position
+    action: TRIM
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 3
+    when:
+      - {fact: pos.over_cap, op: is_true}
+      - {fact: asset_type, op: in, value: [stock, etf, mutual_fund]}
+    reason: "Position is above your concentration limit — trim back to the cap to control single-name risk."
+
+  # Over the size limit it is trimmed by overweight_position above; under it, a stretched winner is not cut —
+  # its gain is protected with a stop that trails the trend.
+  - id: euphoria_protect_gains
+    action: HOLD
+    horizon: short_term
+    base_confidence: 0.65
+    severity: 2
+    actionable: false
+    when:
+      - {fact: regime, op: in, value: [euphoria, bull]}
+      - {fact: tech.rsi, op: ">=", value: 75}
+      - {fact: fund.valuation, op: <, value: 35}
+      - {fact: pos.unrealised_pct, op: ">=", value: 40}
+    reason: "Stretched technically and on valuation after a big gain — let the winner run, but protect the gain with a trailing stop-loss."
+
+  # ---------------- Mutual funds ----------------
+  - id: fund_laggard
+    action: SWITCH
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 3
+    when:
+      - {fact: asset_type, op: ==, value: mutual_fund}
+      - {fact: mf.is_index, op: is_false}          # index funds are meant to track, not beat, the benchmark
+      - {fact: mf.score, op: <, value: 40}
+      - {fact: mf.consistency, op: <, value: 45}
+    reason: "Fund has lagged its benchmark in most rolling periods — consider a consistent fund in the same category."
+
+  - id: fund_top_quality
+    action: ADD
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 1
+    when:
+      - {fact: asset_type, op: ==, value: mutual_fund}
+      - {fact: mf.score, op: ">=", value: 65}
+      - {fact: pos.over_cap, op: is_false}
+    reason: "Consistently beats its benchmark at reasonable cost — keep SIPs running; eligible for fresh money."
+
+  # ---------------- Stocks: strength / weakness ----------------
+  - id: strong_business_strong_trend
+    action: ADD
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 1
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: fund.score, op: ">=", value: 65}
+      - {fact: tech.score, op: ">=", value: 60}
+      - {fact: pos.over_cap, op: is_false}
+      - {fact: regime.blocks_new_risk, op: is_false}
+    reason: "Strong fundamentals confirmed by a healthy uptrend — eligible for fresh allocation."
+
+  - id: weak_business_weak_trend
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.65
+    severity: 3
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: fund.score, op: <, value: 40}
+      - {fact: tech.score, op: <, value: 35}
+      - {fact: intent, op: in, value: [satellite, trade]}
+    reason: "Both fundamentals and price trend are weak — capital is better deployed elsewhere."
+
+  # "Core" is not a shield: weak business AND weak trend → sell half now, the rest if nothing improves in 45 days.
+  - id: weak_business_core_exit
+    action: EXIT
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 3
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: fund.score, op: <, value: 40}
+      - {fact: tech.score, op: <, value: 35}
+      - {fact: watch.days, op: ">=", value: 45}
+    reason: "Fundamentals and trend have both stayed weak for over 45 days — sell the rest; a long-term label doesn't make a weak business better."
+
+  - id: weak_business_core
+    action: TRIM
+    trim_fraction: 0.5
+    horizon: long_term
+    base_confidence: 0.7
+    severity: 2
+    when:
+      - {fact: asset_type, op: ==, value: stock}
+      - {fact: fund.score, op: <, value: 40}
+      - {fact: tech.score, op: <, value: 35}
+    reason: "Marked long-term, but fundamentals and trend are both weak — sell half now; sell the rest if nothing improves within 45 days."
+
+  # ---------------- Retirement & accrual ----------------
+  - id: retirement_accrual
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.9
+    severity: 0
+    actionable: false
+    when:
+      - {fact: asset_type, op: in, value: [epf, vpf, ppf]}
+    reason: "Tax-efficient, guaranteed-rate retirement savings — keep contributing."
+
+  - id: nps_hold
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.8
+    severity: 0
+    actionable: false
+    when:
+      - {fact: asset_type, op: ==, value: nps}
+    reason: "Locked-in retirement corpus — review scheme allocation vs age annually."
+
+  - id: deposits_hold
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.85
+    severity: 0
+    actionable: false
+    when:
+      - {fact: asset_type, op: in, value: [fixed_deposit, bond, cash]}
+    reason: "Fixed-income holding — hold to maturity."
+
+  # ---------------- Default ----------------
+  - id: default_hold
+    action: HOLD
+    horizon: long_term
+    base_confidence: 0.6
+    severity: 0
+    actionable: false
+    when: []
+    reason: "No rule demands action; the holding is within your risk limits."

@@ -1,0 +1,8 @@
+-e ../../libs/fm_common
+numpy==2.2.0
+yfinance==1.7.0
+curl_cffi==0.16.3  # Chrome-like TLS: Yahoo / NSE refuse plain Python clients (429 / 403)
+arq==0.26.1
+openpyxl==3.1.5   # fund-house monthly portfolio workbooks (MF look-through)
+xlrd==2.0.1
+playwright==1.56.0  # optional: headless browser for JavaScript-only fund house pages (Docker image installs Chromium)

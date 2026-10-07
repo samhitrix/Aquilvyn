@@ -1,0 +1,27 @@
+{
+  "_about": "Backup source: holdings come first from Groww's fund pages (all schemes, one format); these fund-house pages are used when Groww has nothing or only an old month. Where each fund house (AMC) publishes its monthly portfolio disclosure. 'match' = words in AMFI's fund-house name; 'pages' = pages that link to the monthly portfolio files (Excel / zip); 'files' = optional direct file URL templates with {yyyy} {yy} {mm} {mon} {Mon} {month} {Month} for the month. Fund houses not listed are found through AMFI's portfolio-disclosure directory. Schemes a fund house's file doesn't give (sites that build their download lists with JavaScript, or only old files) come from 'holdings_api' (a free public holdings API; set it to \"\" to switch that off). Run `python scripts/fm.py funds-check` to see what works.",
+  "holdings_api": "https://mfdata.in/api/v1",
+  "amfi_directory": "https://www.amfiindia.com/online-center/portfolio-disclosure",
+  "amcs": [
+    {"amc": "HDFC Mutual Fund", "match": ["hdfc"], "pages": ["https://www.hdfcfund.com/statutory-disclosure/portfolio/monthly-portfolio"]},
+    {"amc": "ICICI Prudential Mutual Fund", "match": ["icici"], "pages": ["https://www.icicipruamc.com/downloads/others/monthly-portfolio-disclosures"]},
+    {"amc": "SBI Mutual Fund", "match": ["sbi"], "pages": ["https://www.sbimf.com/portfolios"]},
+    {"amc": "Nippon India Mutual Fund", "match": ["nippon"], "pages": ["https://mf.nipponindiaim.com/investor-service/downloads/factsheet-portfolio-and-other-disclosures"]},
+    {"amc": "Axis Mutual Fund", "match": ["axis"], "pages": ["https://www.axismf.com/statutory-disclosures"]},
+    {"amc": "Kotak Mahindra Mutual Fund", "match": ["kotak"], "pages": ["https://www.kotakmf.com/Information/portfolios"]},
+    {"amc": "Mirae Asset Mutual Fund", "match": ["mirae"], "pages": ["https://www.miraeassetmf.co.in/downloads/portfolios"]},
+    {"amc": "PPFAS Mutual Fund", "match": ["ppfas", "parag parikh"], "pages": ["https://amc.ppfas.com/downloads/portfolio-disclosure/"]},
+    {"amc": "UTI Mutual Fund", "match": ["uti"], "pages": ["https://www.utimf.com/downloads/consolidate-all-portfolio-disclosure"]},
+    {"amc": "Aditya Birla Sun Life Mutual Fund", "match": ["aditya birla"], "pages": ["https://mutualfund.adityabirlacapital.com/forms-and-downloads/portfolio"]},
+    {"amc": "DSP Mutual Fund", "match": ["dsp"], "pages": ["https://www.dspim.com/mandatory-disclosures/portfolio-disclosures"]},
+    {"amc": "Tata Mutual Fund", "match": ["tata"], "pages": ["https://www.tatamutualfund.com/schemes-related/portfolio"]},
+    {"amc": "Motilal Oswal Mutual Fund", "match": ["motilal"], "pages": ["https://www.motilaloswalmf.com/downloads/mutual-fund/Month-End-Portfolio", "https://www.motilaloswalmf.com/download/index-fund/month-end-portfolio"]},
+    {"amc": "Quant Mutual Fund", "match": ["quant"], "pages": ["https://quantmutual.com/statutory-disclosures"]},
+    {"amc": "Franklin Templeton Mutual Fund", "match": ["franklin"], "pages": ["https://www.franklintempletonindia.com/reports"]},
+    {"amc": "Canara Robeco Mutual Fund", "match": ["canara"], "pages": ["https://www.canararobeco.com/documents/statutory-disclosures/scheme-dashboard/scheme-monthly-portfolio/"]},
+    {"amc": "Edelweiss Mutual Fund", "match": ["edelweiss"], "pages": ["https://www.edelweissmf.com/statutory/portfolio-of-schemes"]},
+    {"amc": "Bandhan Mutual Fund", "match": ["bandhan"], "pages": ["https://bandhanmutual.com/downloads/disclosures"]},
+    {"amc": "Invesco Mutual Fund", "match": ["invesco"], "pages": ["https://invescomutualfund.com/literature-and-form?tab=Complete"]},
+    {"amc": "HSBC Mutual Fund", "match": ["hsbc"], "pages": ["https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library"]}
+  ]
+}

@@ -1,0 +1,14 @@
+# Files used inside Linux containers must keep LF endings even on a Windows checkout
+* text=auto
+*.sh        text eol=lf
+*.py        text eol=lf
+*.conf      text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.toml      text eol=lf
+*.mako      text eol=lf
+*.ini       text eol=lf
+Dockerfile* text eol=lf
+Makefile    text eol=lf
+.env*       text eol=lf
+*.png       binary
