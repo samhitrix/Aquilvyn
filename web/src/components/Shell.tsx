@@ -61,7 +61,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <div className="space-y-1 border-t border-line pt-3 text-sm">
           {!collapsed && <div className="truncate px-2 text-ink2" title={user.email}>{user.full_name || user.email}</div>}
           {!collapsed && <div className="px-2 text-xs capitalize text-muted">{user.role}</div>}
-          <Link href="/settings#password" title="Change password · recovery code" className="block w-full rounded-lg px-2 py-1.5 text-left text-ink2 hover:bg-page">🔑{!collapsed && " Password & recovery"}</Link>
           <button onClick={toggleTheme} title="Light / dark" className="w-full rounded-lg px-2 py-1.5 text-left text-ink2 hover:bg-page">◐{!collapsed && " Light / dark"}</button>
           <button onClick={() => logout().then(() => router.replace("/login"))} title="Sign out" className="w-full rounded-lg px-2 py-1.5 text-left text-ink2 hover:bg-page">⎋{!collapsed && " Sign out"}</button>
         </div>
